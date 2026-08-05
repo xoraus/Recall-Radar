@@ -47,7 +47,7 @@ async function registerSettings(plugin: ReactRNPlugin) {
   await plugin.settings.registerBooleanSetting({
     id: 'rr-feed-scheduler',
     title: 'Also update RemNote\u2019s built-in SRS schedule during practice sessions',
-    defaultValue: false,
+    defaultValue: true,
   });
 
   // NOTE: PluginSettings in lib/storage.ts is the source of truth actually

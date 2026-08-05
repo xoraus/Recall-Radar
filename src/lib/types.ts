@@ -113,7 +113,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   maxHistoryLength: MAX_HISTORY_POINTS,
   masteryConsecutiveCorrect: 2,
   masteryWeaknessThreshold: 5,
-  feedPracticeResultsToScheduler: false,
+  feedPracticeResultsToScheduler: true,
 };
 
 /** A filter that produces a list of card IDs to practice. */
