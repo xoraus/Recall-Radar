@@ -13,7 +13,7 @@ function download(filename: string, content: string, mime: string): void {
 }
 
 export function exportStatsAsJSON(stats: CardStats[]): void {
-  download('wrong-card-tracker-stats.json', JSON.stringify(stats, null, 2), 'application/json');
+  download('recall-radar-stats.json', JSON.stringify(stats, null, 2), 'application/json');
 }
 
 const CSV_COLUMNS: (keyof CardStats)[] = [
@@ -44,7 +44,7 @@ function csvEscape(value: unknown): string {
 export function exportStatsAsCSV(stats: CardStats[]): void {
   const header = CSV_COLUMNS.join(',');
   const rows = stats.map((s) => CSV_COLUMNS.map((c) => csvEscape((s as any)[c])).join(','));
-  download('wrong-card-tracker-stats.csv', [header, ...rows].join('\n'), 'text/csv');
+  download('recall-radar-stats.csv', [header, ...rows].join('\n'), 'text/csv');
 }
 
 export function exportWeakCardsAsCSV(stats: CardStats[], minMisses: number): void {

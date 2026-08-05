@@ -27,20 +27,20 @@ function FilterPicker({
   const [search, setSearch] = useState('');
 
   return (
-    <div className="wct-practice-picker">
+    <div className="rr-practice-picker">
       <h2>Practice Weak Cards</h2>
-      <p className="wct-muted">Choose what to drill. Cards are ordered by weakness score, weakest first.</p>
+      <p className="rr-muted">Choose what to drill. Cards are ordered by weakness score, weakest first.</p>
 
-      <div className="wct-filter-grid">
+      <div className="rr-filter-grid">
         {BUILT_IN_FILTERS.map((f) => (
-          <button key={f.label} className="wct-filter-btn" onClick={() => onStart(f)}>
+          <button key={f.label} className="rr-filter-btn" onClick={() => onStart(f)}>
             {f.label}
           </button>
         ))}
       </div>
 
-      <div className="wct-custom-filters">
-        <div className="wct-custom-row">
+      <div className="rr-custom-filters">
+        <div className="rr-custom-row">
           <input
             placeholder="Search question/answer text\u2026"
             value={search}
@@ -54,7 +54,7 @@ function FilterPicker({
           </button>
         </div>
         {tags.length > 0 && (
-          <div className="wct-custom-row">
+          <div className="rr-custom-row">
             <select value={customTag} onChange={(e) => setCustomTag(e.target.value)}>
               <option value="">Choose a tag\u2026</option>
               {tags.map((t) => (
@@ -73,7 +73,7 @@ function FilterPicker({
         )}
       </div>
 
-      <p className="wct-muted wct-small">
+      <p className="rr-muted rr-small">
         Every session runs in "practice until mastered" mode: a card leaves the queue once you've gotten it
         right twice in a row, or its live weakness score drops below your configured threshold.
       </p>
@@ -146,7 +146,7 @@ function PracticeSession({
 
   if (!current) {
     return (
-      <div className="wct-session-done">
+      <div className="rr-session-done">
         <h2>Session complete \ud83c\udf89</h2>
         <p>
           Reviewed {summary.seen} card{summary.seen === 1 ? '' : 's'},{' '}
@@ -158,37 +158,37 @@ function PracticeSession({
   }
 
   return (
-    <div className="wct-session">
-      <div className="wct-session-progress">
+    <div className="rr-session">
+      <div className="rr-session-progress">
         {queue.length} card{queue.length === 1 ? '' : 's'} remaining &middot; weakness {current.weaknessScore}
       </div>
-      <div className="wct-flashcard">
-        <div className="wct-flashcard-face">{current.promptText || '(empty front)'}</div>
-        {revealed && <div className="wct-flashcard-answer">{current.answerText || '(empty back)'}</div>}
+      <div className="rr-flashcard">
+        <div className="rr-flashcard-face">{current.promptText || '(empty front)'}</div>
+        {revealed && <div className="rr-flashcard-answer">{current.answerText || '(empty back)'}</div>}
       </div>
 
       {!revealed ? (
-        <button className="wct-reveal-btn" onClick={() => setRevealed(true)}>
+        <button className="rr-reveal-btn" onClick={() => setRevealed(true)}>
           Show Answer
         </button>
       ) : (
-        <div className="wct-answer-buttons">
-          <button className="wct-btn-again" onClick={() => answer('again')}>
+        <div className="rr-answer-buttons">
+          <button className="rr-btn-again" onClick={() => answer('again')}>
             Again
           </button>
-          <button className="wct-btn-hard" onClick={() => answer('hard')}>
+          <button className="rr-btn-hard" onClick={() => answer('hard')}>
             Hard
           </button>
-          <button className="wct-btn-good" onClick={() => answer('good')}>
+          <button className="rr-btn-good" onClick={() => answer('good')}>
             Good
           </button>
-          <button className="wct-btn-easy" onClick={() => answer('easy')}>
+          <button className="rr-btn-easy" onClick={() => answer('easy')}>
             Easy
           </button>
         </div>
       )}
 
-      <button className="wct-exit-btn" onClick={onFinish}>
+      <button className="rr-exit-btn" onClick={onFinish}>
         End session
       </button>
     </div>
@@ -222,7 +222,7 @@ function PracticeWidget() {
   }, [allStats, settings, activeFilter]);
 
   if (!settings || !allStats) {
-    return <div className="wct-loading">Loading practice data\u2026</div>;
+    return <div className="rr-loading">Loading practice data\u2026</div>;
   }
 
   if (!activeFilter) {
@@ -231,7 +231,7 @@ function PracticeWidget() {
 
   if (selectedCards.length === 0) {
     return (
-      <div className="wct-session-done">
+      <div className="rr-session-done">
         <h2>Nothing to practice</h2>
         <p>No cards currently match "{activeFilter.label}". Nice work!</p>
         <button onClick={() => setActiveFilter(null)}>Back to filters</button>

@@ -1,8 +1,8 @@
 {
-  "id": "wrong-card-tracker",
-  "name": "Wrong Card Tracker",
+  "id": "recall-radar",
+  "name": "Recall Radar",
   "author": "Your Name",
-  "repoUrl": "https://github.com/your-username/wrong-card-tracker",
+  "repoUrl": "https://github.com/xoraus/Recall-Radar",
   "enableOnMobile": false,
   "version": {
     "major": 0,

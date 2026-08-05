@@ -1,5 +1,5 @@
 /**
- * Core data model for Wrong Card Tracker.
+ * Core data model for Recall Radar.
  *
  * IMPORTANT ARCHITECTURAL NOTE:
  * RemNote already stores a per-card `repetitionHistory: RepetitionStatus[]`
@@ -9,7 +9,7 @@
  *
  * Rather than duplicating that review log in plugin storage (which the brief
  * warns against — "avoid excessive storage growth" / "avoid writing
- * excessively"), Wrong Card Tracker treats `repetitionHistory` as the single
+ * excessively"), Recall Radar treats `repetitionHistory` as the single
  * source of truth and *derives* `CardStats` from it on demand. We only cache
  * the derived, compact result (this file's `CardStats`), not the raw log.
  * This is both more storage-efficient and can never drift out of sync with

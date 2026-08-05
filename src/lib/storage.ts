@@ -14,10 +14,10 @@ import { CardStats, DEFAULT_SETTINGS, PluginSettings, WeaknessWeights } from './
  * (see updateSingleCardStats in tracker/reviewTracker.ts).
  */
 const CHUNK_COUNT = 64; // tune based on expected KB size; ~consistent 15-30k cards per chunk-set
-const INDEX_KEY = 'wct:index:v1';
-const CHUNK_KEY = (n: number) => `wct:chunk:v1:${n}`;
-const SETTINGS_KEY = 'wct:settings:v1';
-const REBUILD_META_KEY = 'wct:rebuilt-at:v1';
+const INDEX_KEY = 'rr:index:v1';
+const CHUNK_KEY = (n: number) => `rr:chunk:v1:${n}`;
+const SETTINGS_KEY = 'rr:settings:v1';
+const REBUILD_META_KEY = 'rr:rebuilt-at:v1';
 
 function chunkForCardId(cardId: string): number {
   let h = 0;

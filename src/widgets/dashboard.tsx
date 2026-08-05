@@ -87,13 +87,13 @@ function SettingsPanel({
   const [draft, setDraft] = useState(settings);
 
   return (
-    <div className="wct-settings">
+    <div className="rr-settings">
       <h3>Weakness Formula Weights</h3>
-      <p className="wct-muted wct-small">
+      <p className="rr-muted rr-small">
         weakness = misses&times;missWeight + consecutiveMisses&times;consecutiveMissWeight + (100 -
         accuracy)&times;accuracyWeight + min(daysSinceCorrect, cap)&times;daysSinceCorrectWeight
       </p>
-      <div className="wct-settings-grid">
+      <div className="rr-settings-grid">
         <label>
           Miss weight
           <input
@@ -145,7 +145,7 @@ function SettingsPanel({
       </div>
 
       <h3>Weak-Card Thresholds</h3>
-      <div className="wct-settings-grid">
+      <div className="rr-settings-grid">
         <label>
           Minimum miss count
           <input
@@ -165,7 +165,7 @@ function SettingsPanel({
       </div>
 
       <h3>Practice Until Mastered</h3>
-      <div className="wct-settings-grid">
+      <div className="rr-settings-grid">
         <label>
           Consecutive correct required
           <input
@@ -184,7 +184,7 @@ function SettingsPanel({
         </label>
       </div>
 
-      <label className="wct-checkbox-row">
+      <label className="rr-checkbox-row">
         <input
           type="checkbox"
           checked={draft.feedPracticeResultsToScheduler}
@@ -194,7 +194,7 @@ function SettingsPanel({
         reschedule your normal reviews)
       </label>
 
-      <button className="wct-primary-btn" onClick={() => onSave(draft)}>
+      <button className="rr-primary-btn" onClick={() => onSave(draft)}>
         Save Settings
       </button>
     </div>
@@ -216,16 +216,16 @@ function DashboardWidget() {
   }, [stats, search]);
 
   if (!stats || !settings) {
-    return <div className="wct-loading">Loading Wrong Card Tracker\u2026</div>;
+    return <div className="rr-loading">Loading Recall Radar\u2026</div>;
   }
 
   const overall = computeOverallStats(stats, settings.minMissCountForWeak);
 
   return (
-    <div className="wct-dashboard">
-      <header className="wct-header">
-        <h1>Wrong Card Tracker</h1>
-        <div className="wct-header-actions">
+    <div className="rr-dashboard">
+      <header className="rr-header">
+        <h1>Recall Radar</h1>
+        <div className="rr-header-actions">
           <button onClick={() => plugin.window.openWidgetInPane('practice')}>Practice Weak Cards</button>
           <button onClick={rebuild} disabled={rebuilding}>
             {rebuilding ? 'Rebuilding\u2026' : 'Rebuild Statistics'}
@@ -234,9 +234,9 @@ function DashboardWidget() {
       </header>
 
       {rebuilding && progress && (
-        <div className="wct-progress-bar-wrap">
+        <div className="rr-progress-bar-wrap">
           <div
-            className="wct-progress-bar"
+            className="rr-progress-bar"
             style={{ width: `${Math.round((progress.processed / Math.max(1, progress.total)) * 100)}%` }}
           />
           <span>
@@ -245,33 +245,33 @@ function DashboardWidget() {
         </div>
       )}
 
-      <div className="wct-muted wct-small">
+      <div className="rr-muted rr-small">
         {lastRebuild ? `Last full rebuild: ${new Date(lastRebuild).toLocaleString()}` : 'Statistics not yet built.'}
       </div>
 
-      <nav className="wct-tabs">
+      <nav className="rr-tabs">
         {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'wct-tab-active' : ''} onClick={() => setTab(t.id)}>
+          <button key={t.id} className={tab === t.id ? 'rr-tab-active' : ''} onClick={() => setTab(t.id)}>
             {t.label}
           </button>
         ))}
       </nav>
 
       {tab === 'overview' && (
-        <div className="wct-overview">
-          <div className="wct-stats-row">
+        <div className="rr-overview">
+          <div className="rr-stats-row">
             <StatsCard label="Total Reviews" value={overall.totalReviews} />
             <StatsCard label="Total Wrong" value={overall.totalWrong} />
             <StatsCard label="Accuracy" value={`${overall.accuracy}%`} />
             <StatsCard label="Weak Cards" value={overall.totalWeakCards} />
           </div>
-          <div className="wct-stats-row">
+          <div className="rr-stats-row">
             <StatsCard label="Total Cards" value={overall.totalCards} />
             <StatsCard label="Tracked Cards" value={overall.trackedCards} />
             <StatsCard label="Reviews Today" value={overall.reviewsToday} />
             <StatsCard label="Reviews This Week" value={overall.reviewsThisWeek} />
           </div>
-          <div className="wct-stats-row">
+          <div className="rr-stats-row">
             <StatsCard label="Reviews This Month" value={overall.reviewsThisMonth} />
             <StatsCard label="Avg Miss Rate" value={`${overall.averageMissRate}%`} />
             <StatsCard label="Longest Wrong Streak" value={overall.longestWrongStreak} />
@@ -279,7 +279,7 @@ function DashboardWidget() {
           </div>
 
           <h3>Cards Forgotten Today / This Week / This Month</h3>
-          <div className="wct-stats-row">
+          <div className="rr-stats-row">
             <StatsCard label="Forgotten Today" value={forgottenInWindow(stats, DAY).length} />
             <StatsCard label="Forgotten This Week" value={forgottenInWindow(stats, 7 * DAY).length} />
             <StatsCard label="Forgotten This Month" value={forgottenInWindow(stats, 30 * DAY).length} />
@@ -292,7 +292,7 @@ function DashboardWidget() {
       {tab === 'weakest-subjects' && (
         <>
           <GroupBarChart data={weakestSubjects(stats, 12)} />
-          <table className="wct-table">
+          <table className="rr-table">
             <thead>
               <tr>
                 <th>Subject</th>
@@ -318,7 +318,7 @@ function DashboardWidget() {
       {tab === 'weakest-chapters' && (
         <>
           <GroupBarChart data={weakestChapters(stats, 12)} />
-          <table className="wct-table">
+          <table className="rr-table">
             <thead>
               <tr>
                 <th>Chapter</th>
@@ -348,7 +348,7 @@ function DashboardWidget() {
       {tab === 'search' && (
         <div>
           <input
-            className="wct-search-input"
+            className="rr-search-input"
             placeholder="Search question or answer text\u2026"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -358,7 +358,7 @@ function DashboardWidget() {
       )}
 
       {tab === 'charts' && (
-        <div className="wct-charts">
+        <div className="rr-charts">
           <h3>Accuracy Over Time</h3>
           <AccuracyOverTimeChart data={accuracyOverTime(stats, 30)} />
           <h3>Mistakes Over Time</h3>
@@ -381,7 +381,7 @@ function DashboardWidget() {
             }}
           />
           <h3>Export</h3>
-          <div className="wct-export-row">
+          <div className="rr-export-row">
             <button onClick={() => exportStatsAsJSON(stats)}>Export All Stats (JSON)</button>
             <button onClick={() => exportStatsAsCSV(stats)}>Export All Stats (CSV)</button>
             <button onClick={() => exportWeakCardsAsCSV(stats, settings.minMissCountForWeak)}>

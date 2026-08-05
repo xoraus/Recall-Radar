@@ -19,8 +19,8 @@ export function CardTable({
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
 
   return (
-    <div className="wct-table-wrap">
-      <table className="wct-table">
+    <div className="rr-table-wrap">
+      <table className="rr-table">
         <thead>
           <tr>
             {columns.includes('prompt') && <th>Card</th>}
@@ -33,8 +33,8 @@ export function CardTable({
         </thead>
         <tbody>
           {pageRows.map((r) => (
-            <tr key={r.cardId} onClick={() => onOpenCard?.(r)} className="wct-row-clickable">
-              {columns.includes('prompt') && <td className="wct-prompt-cell">{r.promptText || '(empty)'}</td>}
+            <tr key={r.cardId} onClick={() => onOpenCard?.(r)} className="rr-row-clickable">
+              {columns.includes('prompt') && <td className="rr-prompt-cell">{r.promptText || '(empty)'}</td>}
               {columns.includes('misses') && <td>{r.misses}</td>}
               {columns.includes('reviews') && <td>{r.totalReviews}</td>}
               {columns.includes('accuracy') && <td>{r.accuracy}%</td>}
@@ -46,7 +46,7 @@ export function CardTable({
           ))}
           {pageRows.length === 0 && (
             <tr>
-              <td colSpan={columns.length} className="wct-empty-cell">
+              <td colSpan={columns.length} className="rr-empty-cell">
                 No cards match this filter.
               </td>
             </tr>
@@ -54,7 +54,7 @@ export function CardTable({
         </tbody>
       </table>
       {totalPages > 1 && (
-        <div className="wct-pagination">
+        <div className="rr-pagination">
           <button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
             Prev
           </button>

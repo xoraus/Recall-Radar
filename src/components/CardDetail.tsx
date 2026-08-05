@@ -3,24 +3,24 @@ import { CardStats } from '../lib/types';
 
 export function CardDetail({ stats, onClose }: { stats: CardStats; onClose: () => void }) {
   return (
-    <div className="wct-modal-backdrop" onClick={onClose}>
-      <div className="wct-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="wct-modal-close" onClick={onClose} aria-label="Close">
+    <div className="rr-modal-backdrop" onClick={onClose}>
+      <div className="rr-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="rr-modal-close" onClick={onClose} aria-label="Close">
           &times;
         </button>
         <h3>Card Detail</h3>
-        <div className="wct-detail-grid">
+        <div className="rr-detail-grid">
           <div>
-            <div className="wct-detail-label">Question</div>
-            <div className="wct-detail-value">{stats.promptText || '(empty)'}</div>
+            <div className="rr-detail-label">Question</div>
+            <div className="rr-detail-value">{stats.promptText || '(empty)'}</div>
           </div>
           <div>
-            <div className="wct-detail-label">Answer</div>
-            <div className="wct-detail-value">{stats.answerText || '(empty)'}</div>
+            <div className="rr-detail-label">Answer</div>
+            <div className="rr-detail-value">{stats.answerText || '(empty)'}</div>
           </div>
         </div>
 
-        <div className="wct-detail-stats">
+        <div className="rr-detail-stats">
           <div>
             Accuracy: <strong>{stats.accuracy}%</strong>
           </div>
@@ -41,7 +41,7 @@ export function CardDetail({ stats, onClose }: { stats: CardStats; onClose: () =
           </div>
         </div>
 
-        <div className="wct-detail-meta">
+        <div className="rr-detail-meta">
           {stats.notebook && (
             <div>
               Notebook: <em>{stats.notebook}</em>
@@ -59,13 +59,13 @@ export function CardDetail({ stats, onClose }: { stats: CardStats; onClose: () =
           )}
         </div>
 
-        <div className="wct-detail-label" style={{ marginTop: 12 }}>
+        <div className="rr-detail-label" style={{ marginTop: 12 }}>
           Review Timeline
         </div>
-        <div className="wct-timeline">
+        <div className="rr-timeline">
           {stats.history.length === 0 && <span>No reviews yet.</span>}
           {stats.history.map((h, i) => (
-            <span key={i} className={h.correct ? 'wct-tick-ok' : 'wct-tick-bad'} title={new Date(h.date).toLocaleDateString()}>
+            <span key={i} className={h.correct ? 'rr-tick-ok' : 'rr-tick-bad'} title={new Date(h.date).toLocaleDateString()}>
               {h.correct ? '\u2705' : '\u274c'}
             </span>
           ))}

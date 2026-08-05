@@ -10,42 +10,42 @@ import { DEFAULT_WEIGHTS } from '../lib/types';
 
 async function registerSettings(plugin: ReactRNPlugin) {
   await plugin.settings.registerNumberSetting({
-    id: 'wct-weight-miss',
+    id: 'rr-weight-miss',
     title: 'Weakness weight: total misses',
     defaultValue: DEFAULT_WEIGHTS.missWeight,
   });
   await plugin.settings.registerNumberSetting({
-    id: 'wct-weight-consecutive-miss',
+    id: 'rr-weight-consecutive-miss',
     title: 'Weakness weight: consecutive misses',
     defaultValue: DEFAULT_WEIGHTS.consecutiveMissWeight,
   });
   await plugin.settings.registerNumberSetting({
-    id: 'wct-weight-accuracy',
+    id: 'rr-weight-accuracy',
     title: 'Weakness weight: (100 - accuracy)',
     defaultValue: DEFAULT_WEIGHTS.accuracyWeight,
   });
   await plugin.settings.registerNumberSetting({
-    id: 'wct-weight-days-since-correct',
+    id: 'rr-weight-days-since-correct',
     title: 'Weakness weight: days since last correct',
     defaultValue: DEFAULT_WEIGHTS.daysSinceCorrectWeight,
   });
   await plugin.settings.registerNumberSetting({
-    id: 'wct-min-miss-count',
+    id: 'rr-min-miss-count',
     title: 'Minimum miss count to count as "weak"',
     defaultValue: 1,
   });
   await plugin.settings.registerNumberSetting({
-    id: 'wct-min-accuracy-threshold',
+    id: 'rr-min-accuracy-threshold',
     title: 'Minimum accuracy % to count as "weak"',
     defaultValue: 80,
   });
   await plugin.settings.registerNumberSetting({
-    id: 'wct-mastery-consecutive-correct',
+    id: 'rr-mastery-consecutive-correct',
     title: 'Practice-until-mastered: consecutive correct required',
     defaultValue: 2,
   });
   await plugin.settings.registerBooleanSetting({
-    id: 'wct-feed-scheduler',
+    id: 'rr-feed-scheduler',
     title: 'Also update RemNote\u2019s built-in SRS schedule during practice sessions',
     defaultValue: false,
   });
@@ -64,7 +64,7 @@ async function onActivate(plugin: ReactRNPlugin) {
 
   await plugin.app.registerWidget('dashboard', WidgetLocation.Pane, {
     dimensions: { height: 'auto', width: '100%' },
-    widgetTabTitle: 'Wrong Card Tracker',
+    widgetTabTitle: 'Recall Radar',
   });
 
   await plugin.app.registerWidget('practice', WidgetLocation.Pane, {
@@ -77,21 +77,21 @@ async function onActivate(plugin: ReactRNPlugin) {
   });
 
   await plugin.app.registerCommand({
-    id: 'wct-open-dashboard',
-    name: 'Wrong Card Tracker: Open Dashboard',
-    quickCode: 'wct',
+    id: 'rr-open-dashboard',
+    name: 'Recall Radar: Open Dashboard',
+    quickCode: 'rr',
     action: async () => {
       await plugin.window.openWidgetInPane('dashboard');
     },
   });
 
   await plugin.app.registerCommand({
-    id: 'wct-rebuild-stats',
-    name: 'Wrong Card Tracker: Rebuild Statistics',
+    id: 'rr-rebuild-stats',
+    name: 'Recall Radar: Rebuild Statistics',
     action: async () => {
-      await plugin.app.toast('Wrong Card Tracker: rebuilding statistics\u2026');
+      await plugin.app.toast('Recall Radar: rebuilding statistics\u2026');
       await rebuildAllStats(plugin);
-      await plugin.app.toast('Wrong Card Tracker: statistics rebuilt.');
+      await plugin.app.toast('Recall Radar: statistics rebuilt.');
     },
   });
 

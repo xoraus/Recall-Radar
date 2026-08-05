@@ -1,4 +1,4 @@
-# Wrong Card Tracker
+# Recall Radar
 
 A RemNote plugin that continuously tracks review outcomes for every
 flashcard, computes a configurable "weakness score," and lets you practice

@@ -85,13 +85,13 @@ export function DifficultyDistributionChart({
 export function ReviewHeatmap({ data }: { data: { date: number; count: number }[] }) {
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
-    <div className="wct-heatmap">
+    <div className="rr-heatmap">
       {data.map((d) => {
         const intensity = d.count === 0 ? 0 : Math.min(4, Math.ceil((d.count / max) * 4));
         return (
           <div
             key={d.date}
-            className={`wct-heatmap-cell wct-heat-${intensity}`}
+            className={`rr-heatmap-cell rr-heat-${intensity}`}
             title={`${new Date(d.date).toLocaleDateString()}: ${d.count} reviews`}
           />
         );
