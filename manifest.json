@@ -1,0 +1,21 @@
+{
+  "id": "wrong-card-tracker",
+  "name": "Wrong Card Tracker",
+  "author": "Your Name",
+  "repoUrl": "https://github.com/your-username/wrong-card-tracker",
+  "enableOnMobile": false,
+  "version": {
+    "major": 0,
+    "minor": 1,
+    "patch": 0
+  },
+  "description": "Tracks review outcomes for every flashcard, computes a weakness score, and lets you practice only the cards you keep getting wrong.",
+  "requestNative": false,
+  "requiredScopes": [
+    {
+      "type": "All",
+      "level": "Read"
+    }
+  ],
+  "manifestVersion": 1
+}

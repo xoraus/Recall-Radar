@@ -1,0 +1,578 @@
+/*
+ * Wrong Card Tracker styles.
+ *
+ * RemNote applies a `.dark` class to the document when dark mode is on and
+ * documents that Custom CSS / theme authors should target `.dark <selector>`
+ * (see https://plugins.remnote.com/custom-css). We follow the same
+ * convention here rather than inventing our own dark-mode mechanism.
+ */
+
+:root {
+  --wct-bg: #ffffff;
+  --wct-bg-subtle: #f5f6f8;
+  --wct-border: #e2e4e9;
+  --wct-text: #1f2328;
+  --wct-text-muted: #6b7280;
+  --wct-accent: #4f8cff;
+  --wct-danger: #ff6b6b;
+  --wct-warn: #f6a623;
+  --wct-good: #33c17a;
+  --wct-radius: 8px;
+}
+
+.dark {
+  --wct-bg: #1e1f22;
+  --wct-bg-subtle: #26282c;
+  --wct-border: #383a3f;
+  --wct-text: #e6e7ea;
+  --wct-text-muted: #9a9ea6;
+}
+
+.wct-dashboard,
+.wct-practice-picker,
+.wct-session,
+.wct-session-done,
+.wct-sidebar {
+  font-family: inherit;
+  color: var(--wct-text);
+  background: var(--wct-bg);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.wct-loading {
+  padding: 24px;
+  color: var(--wct-text-muted);
+}
+
+.wct-muted {
+  color: var(--wct-text-muted);
+}
+
+.wct-small {
+  font-size: 12px;
+}
+
+.wct-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.wct-header h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.wct-header-actions button,
+.wct-primary-btn {
+  background: var(--wct-accent);
+  color: white;
+  border: none;
+  border-radius: var(--wct-radius);
+  padding: 6px 12px;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.wct-header-actions button:first-child {
+  margin-left: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+.wct-progress-bar-wrap {
+  position: relative;
+  background: var(--wct-bg-subtle);
+  border-radius: var(--wct-radius);
+  height: 20px;
+  margin: 8px 0;
+  overflow: hidden;
+  font-size: 11px;
+}
+
+.wct-progress-bar {
+  background: var(--wct-accent);
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.wct-progress-bar-wrap span {
+  position: absolute;
+  left: 8px;
+  top: 2px;
+  color: var(--wct-text);
+}
+
+.wct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 12px 0 16px;
+  border-bottom: 1px solid var(--wct-border);
+  padding-bottom: 8px;
+}
+
+.wct-tabs button {
+  background: transparent;
+  border: 1px solid var(--wct-border);
+  border-radius: var(--wct-radius);
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--wct-text);
+  cursor: pointer;
+}
+
+.wct-tabs button.wct-tab-active {
+  background: var(--wct-accent);
+  color: white;
+  border-color: var(--wct-accent);
+}
+
+.wct-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.wct-stat-card {
+  background: var(--wct-bg-subtle);
+  border: 1px solid var(--wct-border);
+  border-radius: var(--wct-radius);
+  padding: 10px 12px;
+}
+
+.wct-stat-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.wct-stat-label {
+  font-size: 12px;
+  color: var(--wct-text-muted);
+}
+
+.wct-stat-sub {
+  font-size: 11px;
+  color: var(--wct-text-muted);
+}
+
+.wct-table-wrap {
+  overflow-x: auto;
+}
+
+.wct-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.wct-table th,
+.wct-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--wct-border);
+}
+
+.wct-row-clickable {
+  cursor: pointer;
+}
+
+.wct-row-clickable:hover {
+  background: var(--wct-bg-subtle);
+}
+
+.wct-prompt-cell {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wct-empty-cell {
+  text-align: center;
+  color: var(--wct-text-muted);
+  padding: 24px 0;
+}
+
+.wct-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.wct-pagination button {
+  border: 1px solid var(--wct-border);
+  background: var(--wct-bg);
+  border-radius: var(--wct-radius);
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.wct-pagination button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.wct-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.wct-modal {
+  background: var(--wct-bg);
+  border-radius: var(--wct-radius);
+  padding: 20px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid var(--wct-border);
+}
+
+.wct-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--wct-text-muted);
+}
+
+.wct-detail-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wct-detail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--wct-text-muted);
+}
+
+.wct-detail-value {
+  font-size: 14px;
+}
+
+.wct-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.wct-detail-meta {
+  font-size: 12px;
+  color: var(--wct-text-muted);
+  display: grid;
+  gap: 4px;
+}
+
+.wct-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.wct-heatmap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.wct-heatmap-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--wct-bg-subtle);
+}
+
+.wct-heat-1 {
+  background: #c9e3ff;
+}
+.wct-heat-2 {
+  background: #8cbcff;
+}
+.wct-heat-3 {
+  background: #4f8cff;
+}
+.wct-heat-4 {
+  background: #1c5fd6;
+}
+
+.wct-settings h3 {
+  margin-top: 18px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.wct-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wct-settings-grid label,
+.wct-checkbox-row {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.wct-checkbox-row {
+  flex-direction: row;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.wct-settings input[type='number'] {
+  padding: 4px 6px;
+  border: 1px solid var(--wct-border);
+  border-radius: 6px;
+  background: var(--wct-bg);
+  color: var(--wct-text);
+}
+
+.wct-export-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.wct-export-row button {
+  border: 1px solid var(--wct-border);
+  background: var(--wct-bg-subtle);
+  border-radius: var(--wct-radius);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.wct-search-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--wct-border);
+  border-radius: var(--wct-radius);
+  background: var(--wct-bg);
+  color: var(--wct-text);
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+/* Practice picker */
+
+.wct-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.wct-filter-btn {
+  border: 1px solid var(--wct-border);
+  background: var(--wct-bg-subtle);
+  border-radius: var(--wct-radius);
+  padding: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+}
+
+.wct-filter-btn:hover {
+  border-color: var(--wct-accent);
+}
+
+.wct-custom-filters {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.wct-custom-row {
+  display: flex;
+  gap: 8px;
+}
+
+.wct-custom-row input,
+.wct-custom-row select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--wct-border);
+  border-radius: 6px;
+  background: var(--wct-bg);
+  color: var(--wct-text);
+}
+
+.wct-custom-row button {
+  border: 1px solid var(--wct-border);
+  background: var(--wct-accent);
+  color: white;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.wct-custom-row button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Practice session */
+
+.wct-session-progress {
+  font-size: 12px;
+  color: var(--wct-text-muted);
+  margin-bottom: 10px;
+}
+
+.wct-flashcard {
+  border: 1px solid var(--wct-border);
+  border-radius: var(--wct-radius);
+  padding: 24px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  background: var(--wct-bg-subtle);
+  margin-bottom: 14px;
+}
+
+.wct-flashcard-face {
+  font-size: 16px;
+  text-align: center;
+}
+
+.wct-flashcard-answer {
+  font-size: 15px;
+  text-align: center;
+  color: var(--wct-accent);
+  border-top: 1px dashed var(--wct-border);
+  padding-top: 12px;
+}
+
+.wct-reveal-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--wct-accent);
+  color: white;
+  border: none;
+  border-radius: var(--wct-radius);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.wct-answer-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.wct-answer-buttons button {
+  padding: 10px 0;
+  border: none;
+  border-radius: var(--wct-radius);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.wct-btn-again {
+  background: var(--wct-danger);
+}
+.wct-btn-hard {
+  background: var(--wct-warn);
+}
+.wct-btn-good {
+  background: var(--wct-accent);
+}
+.wct-btn-easy {
+  background: var(--wct-good);
+}
+
+.wct-exit-btn {
+  margin-top: 12px;
+  background: none;
+  border: 1px solid var(--wct-border);
+  border-radius: var(--wct-radius);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--wct-text-muted);
+}
+
+.wct-session-done {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.wct-session-done button {
+  margin-top: 14px;
+  background: var(--wct-accent);
+  color: white;
+  border: none;
+  border-radius: var(--wct-radius);
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+/* Sidebar */
+
+.wct-sidebar h4 {
+  margin: 0 0 8px;
+}
+
+.wct-sidebar h5 {
+  margin: 12px 0 4px;
+  font-size: 12px;
+  color: var(--wct-text-muted);
+}
+
+.wct-sidebar-stats {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.wct-sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.wct-sidebar button {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: var(--wct-radius);
+  border: 1px solid var(--wct-border);
+  background: var(--wct-bg-subtle);
+  color: var(--wct-text);
+  cursor: pointer;
+  font-size: 12px;
+}
