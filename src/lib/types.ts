@@ -38,6 +38,14 @@ export interface CardStats {
   promptText: string;
   /** Plain-text rendering of the card's back, truncated for display. */
   answerText: string;
+  /** Present only for text-based RemNote multiple-choice cards. */
+  multipleChoice?: {
+    options: string[];
+    /** Zero-based indices in `options` that are correct. */
+    correctOptionIndexes: number[];
+  };
+  /** Source Rem timestamp used to invalidate cached card content. */
+  contentUpdatedAt?: number;
 
   totalReviews: number;
   correct: number;
