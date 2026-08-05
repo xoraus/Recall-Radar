@@ -63,13 +63,7 @@ async function onActivate(plugin: ReactRNPlugin) {
   await registerSettings(plugin);
 
   await plugin.app.registerWidget('dashboard', WidgetLocation.Pane, {
-    dimensions: { height: 'auto', width: '100%' },
     widgetTabTitle: 'Recall Radar',
-  });
-
-  await plugin.app.registerWidget('practice', WidgetLocation.Pane, {
-    dimensions: { height: 'auto', width: '100%' },
-    widgetTabTitle: 'Practice Weak Cards',
   });
 
   await plugin.app.registerWidget('sidebar', WidgetLocation.RightSidebar, {
@@ -99,8 +93,8 @@ async function onActivate(plugin: ReactRNPlugin) {
   // Fires once per answered card in the normal flashcard queue. We only
   // touch the single affected card's cache entry (see reviewTracker.ts),
   // so this adds negligible overhead to normal reviews.
-  plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
-    const cardId = await resolveCompletedCardId(plugin, data);
+  plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (...args: any[]) => {
+    const cardId = await resolveCompletedCardId(plugin, ...args);
     if (cardId) {
       await updateSingleCardStats(plugin, cardId);
     }

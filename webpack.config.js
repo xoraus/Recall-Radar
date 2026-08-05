@@ -23,7 +23,29 @@ for (const file of widgetFiles) {
       title: name,
       filename: `${name}.html`,
       chunks: [name],
-      templateContent: '<!DOCTYPE html><html><head></head><body><div id="root"></div></body></html>',
+      templateContent: `<!DOCTYPE html><html><head><script>
+// Clean up widgetInstanceId to remove document slugs that break RemNote's parser
+const url = new URL(window.location.href);
+let widgetInstanceId = url.searchParams.get('widgetInstanceId');
+if (widgetInstanceId) {
+  // A slug is any text ending with a dash before a 14-22 char alphanumeric ID, followed by ) or _ or end of string.
+  // We only match typical slug characters [a-zA-Z0-9%_-] so we don't accidentally consume the structural (( parentheses!
+  // Example: ((Ledger-Accounts-JvunqYqQQmcKjKQA9)_(widget~...)_50) -> ((JvunqYqQQmcKjKQA9)_(widget~...)_50)
+  const cleanId = widgetInstanceId.replace(/(?:[a-zA-Z0-9%_-]+?-)([a-zA-Z0-9]{14,22})(?=[)_]|$)/g, '$1');
+  if (cleanId !== widgetInstanceId) {
+    url.searchParams.set('widgetInstanceId', cleanId);
+    window.history.replaceState({}, '', url);
+  }
+}
+
+// Redirect logic
+const params = new URLSearchParams(window.location.search);
+const widgetName = params.get('widgetName');
+const isIndex = window.location.pathname === '/' || window.location.pathname.endsWith('index.html');
+if (widgetName && isIndex && widgetName !== 'index') {
+  window.location.replace(widgetName + '.html' + window.location.search);
+}
+</script></head><body><div id="root"></div></body></html>`,
     })
   );
 }

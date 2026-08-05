@@ -20,12 +20,329 @@ import { StatsCard } from '../components/StatsCard';
 import { CardTable } from '../components/CardTable';
 import { CardDetail } from '../components/CardDetail';
 import { GroupBarChart, DifficultyDistributionChart, AccuracyOverTimeChart, MistakesOverTimeChart, ReviewHeatmap } from '../components/Charts';
+import { BUILT_IN_FILTERS, isMastered, selectCardsForPractice } from '../lib/practice';
+import { upsertCardStats } from '../lib/storage';
+import { buildCardStats } from '../lib/stats';
+import { QueueInteractionScore } from '@remnote/plugin-sdk';
+import type { PracticeFilter } from '../lib/types';
 import '../styles.css';
+
+type SessionOutcome = 'again' | 'hard' | 'good' | 'easy';
+
+function shuffledOptionIndexes(length: number, seed: string): number[] {
+  // Deterministic per card within a session: choices move between cards but
+  // never jump while the learner is deciding.
+  let value = Array.from(seed).reduce((hash, char) => ((hash * 31) + char.charCodeAt(0)) >>> 0, 2166136261);
+  const indexes = Array.from({ length }, (_, index) => index);
+  for (let index = indexes.length - 1; index > 0; index--) {
+    value = (value * 1664525 + 1013904223) >>> 0;
+    const target = value % (index + 1);
+    [indexes[index], indexes[target]] = [indexes[target], indexes[index]];
+  }
+  return indexes;
+}
+
+const OUTCOME_SCORE: Record<SessionOutcome, QueueInteractionScore> = {
+  again: QueueInteractionScore.AGAIN,
+  hard: QueueInteractionScore.HARD,
+  good: QueueInteractionScore.GOOD,
+  easy: QueueInteractionScore.EASY,
+};
+
+function FilterPicker({
+  onStart,
+  tags,
+}: {
+  onStart: (filter: PracticeFilter) => void;
+  tags: string[];
+}) {
+  const [customTag, setCustomTag] = useState('');
+  const [search, setSearch] = useState('');
+
+  return (
+    <div className="rr-practice-picker">
+      <h2>Practice Weak Cards</h2>
+      <p className="rr-muted">Choose what to drill. Cards are ordered by weakness score, weakest first.</p>
+
+      <div className="rr-filter-grid">
+        {BUILT_IN_FILTERS.map((f) => (
+          <button key={f.label} className="rr-filter-btn" onClick={() => onStart(f)}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="rr-custom-filters">
+        <div className="rr-custom-row">
+          <input
+            placeholder="Search question/answer text\u2026"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button
+            disabled={!search.trim()}
+            onClick={() => onStart({ label: `Search: ${search}`, kind: 'search', search })}
+          >
+            Practice matches
+          </button>
+        </div>
+        {tags.length > 0 && (
+          <div className="rr-custom-row">
+            <select value={customTag} onChange={(e) => setCustomTag(e.target.value)}>
+              <option value="">Choose a tag\u2026</option>
+              {tags.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <button
+              disabled={!customTag}
+              onClick={() => onStart({ label: `Tag: ${customTag}`, kind: 'tag', tag: customTag })}
+            >
+              Practice tag
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PracticeSession({
+  cards,
+  settings,
+  onFinish,
+}: {
+  cards: CardStats[];
+  settings: PluginSettings;
+  onFinish: () => void;
+}) {
+  const plugin = usePlugin();
+  const [queue, setQueue] = useState<CardStats[]>(cards);
+  const [index, setIndex] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const [sessionCorrectStreak, setSessionCorrectStreak] = useState<Record<string, number>>({});
+  const [summary, setSummary] = useState({ seen: 0, correct: 0 });
+
+  const current = queue[index];
+  const isMultipleChoice = Boolean(current?.multipleChoice);
+  const optionIndexes = useMemo(
+    () => current?.multipleChoice ? shuffledOptionIndexes(current.multipleChoice.options.length, current.cardId) : [],
+    [current?.cardId, current?.multipleChoice]
+  );
+  const mcqCorrect = current?.multipleChoice
+    ? selectedOptions.length === current.multipleChoice.correctOptionIndexes.length &&
+      selectedOptions.every((option) => current.multipleChoice!.correctOptionIndexes.includes(option))
+    : false;
+
+  function selectOption(optionIndex: number) {
+    if (!current?.multipleChoice || revealed) return;
+    const next = selectedOptions.includes(optionIndex)
+      ? selectedOptions.filter((index) => index !== optionIndex)
+      : [...selectedOptions, optionIndex];
+    setSelectedOptions(next);
+  }
+
+  function submitMultipleChoice() {
+    if (!current?.multipleChoice || selectedOptions.length === 0) return;
+    setRevealed(true);
+  }
+
+  useEffect(() => {
+    if (!isMultipleChoice || !current) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
+
+      const optionNumber = Number(event.key);
+      if (!revealed && optionNumber >= 1 && optionNumber <= optionIndexes.length) {
+        event.preventDefault();
+        selectOption(optionIndexes[optionNumber - 1]);
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (!revealed) submitMultipleChoice();
+        else void answer(mcqCorrect ? 'hard' : 'again');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [current, isMultipleChoice, mcqCorrect, optionIndexes, revealed, selectedOptions]);
+
+  async function answer(outcome: SessionOutcome) {
+    if (!current) return;
+    const ok = outcome !== 'again';
+    setSummary((s) => ({ seen: s.seen + 1, correct: s.correct + (ok ? 1 : 0) }));
+
+    const streak = sessionCorrectStreak[current.cardId] ?? 0;
+    const newStreak = ok ? streak + 1 : 0;
+    setSessionCorrectStreak((m) => ({ ...m, [current.cardId]: newStreak }));
+
+    if (settings.feedPracticeResultsToScheduler) {
+      const card = await plugin.card.findOne(current.cardId);
+      if (card) {
+        await card.updateCardRepetitionStatus(OUTCOME_SCORE[outcome]);
+        const rem = await card.getRem();
+        if (rem) {
+          const fresh = await buildCardStats(plugin, card, rem, { weights: settings.weights }, current);
+          await upsertCardStats(plugin, fresh);
+        }
+      }
+    }
+
+    const mastered = isMastered(newStreak, current.weaknessScore, settings);
+    setRevealed(false);
+    setSelectedOptions([]);
+
+    if (mastered) {
+      const nextQueue = queue.filter((c) => c.cardId !== current.cardId);
+      setQueue(nextQueue);
+      setIndex((i) => Math.min(i, Math.max(0, nextQueue.length - 1)));
+    } else {
+      setQueue((q) => {
+        const rest = q.filter((_, i) => i !== index);
+        return [...rest, current];
+      });
+      if (index >= queue.length - 1) setIndex(0);
+    }
+  }
+
+  if (!current) {
+    return (
+      <div className="rr-session-done">
+        <h2>Session complete \ud83c\udf89</h2>
+        <p>
+          Reviewed {summary.seen} card{summary.seen === 1 ? '' : 's'},{' '}
+          {summary.seen > 0 ? Math.round((summary.correct / summary.seen) * 100) : 0}% correct this session.
+        </p>
+        <button onClick={onFinish}>Back to filters</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rr-session">
+      <div className="rr-session-progress">
+        {queue.length} card{queue.length === 1 ? '' : 's'} remaining &middot; weakness {current.weaknessScore}
+      </div>
+      <div className="rr-flashcard" key={current.cardId}>
+        <div className="rr-flashcard-face">{current.promptText || '(empty front)'}</div>
+        {isMultipleChoice && current.multipleChoice && (
+          <div className="rr-mcq-options" role="group" aria-label="Answer choices">
+            {optionIndexes.map((optionIndex, displayIndex) => {
+              const selected = selectedOptions.includes(optionIndex);
+              const correct = current.multipleChoice!.correctOptionIndexes.includes(optionIndex);
+              const feedback = revealed ? (correct ? ' is-correct' : selected ? ' is-incorrect' : '') : '';
+              return (
+                <button
+                  key={optionIndex}
+                  className={`rr-mcq-option${selected ? ' is-selected' : ''}${feedback}`}
+                  onClick={() => selectOption(optionIndex)}
+                  disabled={revealed}
+                  aria-pressed={selected}
+                >
+                  <span className="rr-mcq-option-key">{String.fromCharCode(65 + displayIndex)}</span>
+                  <span>{current.multipleChoice!.options[optionIndex]}</span>
+                  {revealed && correct && <span className="rr-mcq-feedback">Correct</span>}
+                  {revealed && selected && !correct && <span className="rr-mcq-feedback">Incorrect</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {revealed && !isMultipleChoice && <div className="rr-flashcard-answer">{current.answerText || '(empty back)'}</div>}
+      </div>
+
+      {isMultipleChoice && !revealed ? (
+        <button className="rr-reveal-btn" onClick={submitMultipleChoice} disabled={selectedOptions.length === 0}>
+          Check answer
+        </button>
+      ) : !revealed ? (
+        <button className="rr-reveal-btn" onClick={() => setRevealed(true)}>
+          Show Answer
+        </button>
+      ) : (
+        <div className="rr-answer-buttons">
+          <button className={`rr-btn-again${isMultipleChoice && !mcqCorrect ? ' is-recommended' : ''}`} onClick={() => answer('again')}>
+            Again
+          </button>
+          <button className={`rr-btn-hard${isMultipleChoice && mcqCorrect ? ' is-recommended' : ''}`} onClick={() => answer('hard')}>
+            Hard
+          </button>
+          <button className="rr-btn-good" onClick={() => answer('good')}>
+            Good
+          </button>
+          <button className="rr-btn-easy" onClick={() => answer('easy')}>
+            Easy
+          </button>
+        </div>
+      )}
+
+      <div className="rr-session-actions" style={{ display: 'flex', gap: '8px' }}>
+        <button className="rr-exit-btn" onClick={onFinish} style={{ flex: 1 }}>
+          End session
+        </button>
+        <button 
+          className="rr-native-btn" 
+          onClick={async () => {
+            const rem = await plugin.rem.findOne(current.remId);
+            if (rem) {
+              await plugin.window.openRem(rem);
+            }
+          }}
+          title="Open this card natively in RemNote"
+        >
+          View Native Card
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DashboardPractice({ settings, stats }: { settings: PluginSettings, stats: CardStats[] }) {
+  const [activeFilter, setActiveFilter] = useState<PracticeFilter | null>(null);
+
+  const tags = useMemo(() => {
+    const set = new Set<string>();
+    stats.forEach((s) => s.tags.forEach((t) => set.add(t)));
+    return Array.from(set).sort();
+  }, [stats]);
+
+  const allStatsObj = useMemo(() => {
+    const obj: Record<string, CardStats> = {};
+    stats.forEach(s => obj[s.cardId] = s);
+    return obj;
+  }, [stats]);
+
+  const selectedCards = useMemo(() => {
+    if (!activeFilter) return [];
+    return selectCardsForPractice(allStatsObj, activeFilter, settings);
+  }, [allStatsObj, settings, activeFilter]);
+
+  if (!activeFilter) {
+    return <FilterPicker onStart={setActiveFilter} tags={tags} />;
+  }
+
+  if (selectedCards.length === 0) {
+    return (
+      <div className="rr-session-done">
+        <h2>Nothing to practice</h2>
+        <p>No cards currently match "{activeFilter.label}". Nice work!</p>
+        <button onClick={() => setActiveFilter(null)}>Back to filters</button>
+      </div>
+    );
+  }
+
+  return <PracticeSession cards={selectedCards} settings={settings} onFinish={() => setActiveFilter(null)} />;
+}
 
 const DAY = 24 * 60 * 60 * 1000;
 
 type Tab =
   | 'overview'
+  | 'practice'
   | 'top-forgotten'
   | 'weakest-subjects'
   | 'weakest-chapters'
@@ -37,6 +354,7 @@ type Tab =
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'practice', label: 'Practice' },
   { id: 'top-forgotten', label: 'Top Forgotten' },
   { id: 'weakest-subjects', label: 'Weakest Subjects' },
   { id: 'weakest-chapters', label: 'Weakest Chapters' },
@@ -54,6 +372,7 @@ function useDashboardData() {
   const [lastRebuild, setLastRebuild] = useState<number | undefined>(undefined);
   const [rebuilding, setRebuilding] = useState(false);
   const [progress, setProgress] = useState<RebuildProgress | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
     const [all, s, t] = await Promise.all([loadAllStats(plugin), getSettings(plugin), getLastRebuildTime(plugin)]);
@@ -63,18 +382,24 @@ function useDashboardData() {
   };
 
   useEffect(() => {
-    refresh();
+    refresh().catch((e) => setError(String(e)));
   }, [plugin]);
 
   const rebuild = async () => {
+    setError(null);
     setRebuilding(true);
     setProgress(null);
-    await rebuildAllStats(plugin, (p) => setProgress(p));
-    setRebuilding(false);
-    await refresh();
+    try {
+      await rebuildAllStats(plugin, (p) => setProgress(p));
+      await refresh();
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    } finally {
+      setRebuilding(false);
+    }
   };
 
-  return { stats, settings, setSettings, lastRebuild, rebuilding, progress, rebuild, refresh };
+  return { stats, settings, setSettings, lastRebuild, rebuilding, progress, error, rebuild, refresh };
 }
 
 function SettingsPanel({
@@ -202,7 +527,7 @@ function SettingsPanel({
 }
 
 function DashboardWidget() {
-  const { stats, settings, setSettings, lastRebuild, rebuilding, progress, rebuild, refresh } = useDashboardData();
+  const { stats, settings, setSettings, lastRebuild, rebuilding, progress, error, rebuild, refresh } = useDashboardData();
   const [tab, setTab] = useState<Tab>('overview');
   const [detail, setDetail] = useState<CardStats | null>(null);
   const [search, setSearch] = useState('');
@@ -226,22 +551,32 @@ function DashboardWidget() {
       <header className="rr-header">
         <h1>Recall Radar</h1>
         <div className="rr-header-actions">
-          <button onClick={() => plugin.window.openWidgetInPane('practice')}>Practice Weak Cards</button>
-          <button onClick={rebuild} disabled={rebuilding}>
+          <button
+            onClick={rebuild}
+            disabled={rebuilding}
+            className="rr-rebuild-btn"
+            title="Force a complete rescan of all cards in your workspace. This can take a while."
+          >
             {rebuilding ? 'Rebuilding\u2026' : 'Rebuild Statistics'}
           </button>
         </div>
       </header>
 
-      {rebuilding && progress && (
-        <div className="rr-progress-bar-wrap">
+      {progress && (
+        <div className="rr-progress-bar">
           <div
-            className="rr-progress-bar"
-            style={{ width: `${Math.round((progress.processed / Math.max(1, progress.total)) * 100)}%` }}
-          />
-          <span>
-            {progress.processed} / {progress.total} cards
-          </span>
+            className="rr-progress-fill"
+            style={{ width: `${(progress.processed / Math.max(1, progress.total)) * 100}%` }}
+          ></div>
+          <div className="rr-progress-text">
+            {progress.phase ? `${progress.phase}: ` : ''}{progress.processed} / {progress.total}
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="rr-error-message" style={{ color: 'red', marginTop: '10px' }}>
+          <strong>Error during rebuild:</strong> {error}
         </div>
       )}
 
@@ -389,6 +724,10 @@ function DashboardWidget() {
             </button>
           </div>
         </div>
+      )}
+
+      {tab === 'practice' && (
+        <DashboardPractice settings={settings} stats={stats} />
       )}
 
       {detail && <CardDetail stats={detail} onClose={() => setDetail(null)} />}

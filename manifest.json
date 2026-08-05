@@ -1,7 +1,7 @@
 {
   "id": "recall-radar",
   "name": "Recall Radar",
-  "author": "Your Name",
+  "author": "xoraus",
   "repoUrl": "https://github.com/xoraus/Recall-Radar",
   "enableOnMobile": false,
   "version": {
@@ -11,10 +11,11 @@
   },
   "description": "Tracks review outcomes for every flashcard, computes a weakness score, and lets you practice only the cards you keep getting wrong.",
   "requestNative": false,
+  "action": "index.html",
   "requiredScopes": [
     {
       "type": "All",
-      "level": "Read"
+      "level": "ReadCreateModify"
     }
   ],
   "manifestVersion": 1
