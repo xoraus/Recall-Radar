@@ -125,6 +125,7 @@ function PracticeSession({
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [sessionCorrectStreak, setSessionCorrectStreak] = useState<Record<string, number>>({});
   const [summary, setSummary] = useState({ seen: 0, correct: 0 });
+  const [activeRating, setActiveRating] = useState<SessionOutcome | null>(null);
 
   const current = queue[index];
   const isMultipleChoice = Boolean(current?.multipleChoice);
@@ -139,10 +140,8 @@ function PracticeSession({
 
   function selectOption(optionIndex: number) {
     if (!current?.multipleChoice || revealed) return;
-    const next = selectedOptions.includes(optionIndex)
-      ? selectedOptions.filter((index) => index !== optionIndex)
-      : [...selectedOptions, optionIndex];
-    setSelectedOptions(next);
+    setSelectedOptions([optionIndex]);
+    setRevealed(true);
   }
 
   function submitMultipleChoice() {
@@ -161,6 +160,10 @@ function PracticeSession({
       if (!revealed && optionNumber >= 1 && optionNumber <= optionIndexes.length) {
         event.preventDefault();
         selectOption(optionIndexes[optionNumber - 1]);
+      } else if (revealed && optionNumber >= 1 && optionNumber <= 4) {
+        event.preventDefault();
+        const outcomes: SessionOutcome[] = ['again', 'hard', 'good', 'easy'];
+        void answer(outcomes[optionNumber - 1]);
       } else if (event.key === 'Enter') {
         event.preventDefault();
         if (!revealed) submitMultipleChoice();
@@ -172,7 +175,12 @@ function PracticeSession({
   }, [current, isMultipleChoice, mcqCorrect, optionIndexes, revealed, selectedOptions]);
 
   async function answer(outcome: SessionOutcome) {
-    if (!current) return;
+    if (!current || activeRating) return;
+    setActiveRating(outcome);
+
+    // Wait a brief moment so the user sees the button highlight
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
     const ok = outcome !== 'again';
     setSummary((s) => ({ seen: s.seen + 1, correct: s.correct + (ok ? 1 : 0) }));
 
@@ -193,6 +201,7 @@ function PracticeSession({
     }
 
     const mastered = isMastered(newStreak, current.weaknessScore, settings);
+    setActiveRating(null);
     setRevealed(false);
     setSelectedOptions([]);
 
@@ -243,10 +252,11 @@ function PracticeSession({
                   disabled={revealed}
                   aria-pressed={selected}
                 >
-                  <span className="rr-mcq-option-key">{String.fromCharCode(65 + displayIndex)}</span>
-                  <span>{current.multipleChoice!.options[optionIndex]}</span>
+                  <span className="rr-mcq-option-radio" />
+                  <span className="rr-mcq-option-text">{current.multipleChoice!.options[optionIndex]}</span>
                   {revealed && correct && <span className="rr-mcq-feedback">Correct</span>}
                   {revealed && selected && !correct && <span className="rr-mcq-feedback">Incorrect</span>}
+                  <span className="rr-mcq-option-number">{displayIndex + 1}</span>
                 </button>
               );
             })}
@@ -265,16 +275,16 @@ function PracticeSession({
         </button>
       ) : (
         <div className="rr-answer-buttons">
-          <button className={`rr-btn-again${isMultipleChoice && !mcqCorrect ? ' is-recommended' : ''}`} onClick={() => answer('again')}>
+          <button className={`rr-btn-again${isMultipleChoice && !mcqCorrect ? ' is-recommended' : ''}${activeRating === 'again' ? ' is-active' : ''}`} onClick={() => answer('again')} title="Press 1 for Again">
             Again
           </button>
-          <button className={`rr-btn-hard${isMultipleChoice && mcqCorrect ? ' is-recommended' : ''}`} onClick={() => answer('hard')}>
+          <button className={`rr-btn-hard${isMultipleChoice && mcqCorrect ? ' is-recommended' : ''}${activeRating === 'hard' ? ' is-active' : ''}`} onClick={() => answer('hard')} title="Press 2 for Hard">
             Hard
           </button>
-          <button className="rr-btn-good" onClick={() => answer('good')}>
+          <button className={`rr-btn-good${activeRating === 'good' ? ' is-active' : ''}`} onClick={() => answer('good')} title="Press 3 for Good">
             Good
           </button>
-          <button className="rr-btn-easy" onClick={() => answer('easy')}>
+          <button className={`rr-btn-easy${activeRating === 'easy' ? ' is-active' : ''}`} onClick={() => answer('easy')} title="Press 4 for Easy">
             Easy
           </button>
         </div>
