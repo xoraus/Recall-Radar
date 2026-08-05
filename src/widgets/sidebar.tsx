@@ -50,7 +50,7 @@ function SidebarWidget() {
         {worst.length === 0 && <li className="rr-muted">No missed cards yet.</li>}
       </ul>
 
-      <button className="rr-primary-btn" onClick={() => plugin.window.openWidgetInPane('practice')}>
+      <button className="rr-primary-btn" onClick={() => plugin.window.openWidgetInPane('dashboard')}>
         Practice Now
       </button>
       <button onClick={() => plugin.window.openWidgetInPane('dashboard')}>Open Dashboard</button>
